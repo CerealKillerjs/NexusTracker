@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
@@ -78,6 +78,7 @@ const Navigation = ({ isMobile }) => {
   const [cookies] = useCookies();
   const [role, setRole] = useState("user");
   const [isServer, setIsServer] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   const theme = useContext(ThemeContext);
 
@@ -86,15 +87,13 @@ const Navigation = ({ isMobile }) => {
 
   const { token } = cookies;
 
-  const {
-    publicRuntimeConfig: {
-      SQ_API_URL,
-      SQ_ALLOW_REGISTER,
-      SQ_ALLOW_UNREGISTERED_VIEW,
-    },
-  } = getConfig();
+  
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_ALLOW_REGISTER = process.env.SQ_ALLOW_REGISTER;
+  const SQ_ALLOW_UNREGISTERED_VIEW = process.env.SQ_ALLOW_UNREGISTERED_VIEW === 'true';
 
   useEffect(() => {
+    setMounted(true);
     const getUserRole = async () => {
       try {
         const roleRes = await fetch(`${SQ_API_URL}/account/get-role`, {
@@ -109,6 +108,8 @@ const Navigation = ({ isMobile }) => {
     if (token) getUserRole();
     setIsServer(false);
   }, [token]);
+
+  if (!mounted) return null;
 
   return (
     <Box
@@ -138,37 +139,37 @@ const Navigation = ({ isMobile }) => {
         >
           {token ? (
             <>
-              <Link href="/" passHref>
+              <Link href="/" legacyBehavior>
                 <NavLink title={getLocaleString("navHome")}>
                   <Home size={24} />
                 </NavLink>
               </Link>
-              <Link href="/categories" passHref>
+              <Link href="/categories" legacyBehavior>
                 <NavLink title={getLocaleString("navBrowse")}>
                   <ListUl size={24} />
                 </NavLink>
               </Link>
-              <Link href="/requests" passHref>
+              <Link href="/requests" legacyBehavior>
                 <NavLink title={getLocaleString("navRequests")}>
                   <MessageAdd size={24} />
                 </NavLink>
               </Link>
-              <Link href="/announcements" passHref>
+              <Link href="/announcements" legacyBehavior>
                 <NavLink title={getLocaleString("navAnnouncements")}>
                   <News size={24} />
                 </NavLink>
               </Link>
-              <Link href="/wiki" passHref>
+              <Link href="/wiki" legacyBehavior>
                 <NavLink title={getLocaleString("navWiki")}>
                   <BookOpen size={24} />
                 </NavLink>
               </Link>
-              <Link href="/rss" passHref>
+              <Link href="/rss" legacyBehavior>
                 <NavLink title={getLocaleString("navRSS")}>
                   <Rss size={24} />
                 </NavLink>
               </Link>
-              <Link href="/bookmarks" passHref>
+              <Link href="/bookmarks" legacyBehavior>
                 <NavLink title={getLocaleString("navBookmarks")}>
                   <Bookmark size={24} />
                 </NavLink>
@@ -176,14 +177,14 @@ const Navigation = ({ isMobile }) => {
             </>
           ) : (
             <>
-              <Link href="/login" passHref>
+              <Link href="/login" legacyBehavior>
                 <NavLink title={getLocaleString("logIn")}>
                   <LogInCircle size={24} />
                 </NavLink>
               </Link>
               {(SQ_ALLOW_REGISTER === "open" ||
                 SQ_ALLOW_REGISTER === "invite") && (
-                <Link href="/register" passHref>
+                <Link href="/register" legacyBehavior>
                   <NavLink title={getLocaleString("register")}>
                     <UserPlus size={24} />
                   </NavLink>
@@ -191,12 +192,12 @@ const Navigation = ({ isMobile }) => {
               )}
               {SQ_ALLOW_UNREGISTERED_VIEW && (
                 <>
-                  <Link href="/categories" passHref>
+                  <Link href="/categories" legacyBehavior>
                     <NavLink title={getLocaleString("navBrowse")}>
                       <ListUl size={24} />
                     </NavLink>
                   </Link>
-                  <Link href="/wiki" passHref>
+                  <Link href="/wiki" legacyBehavior>
                     <NavLink title={getLocaleString("navWiki")}>
                       <BookOpen size={24} />
                     </NavLink>

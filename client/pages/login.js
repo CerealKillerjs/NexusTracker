@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import getConfig from "next/config";
+
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useCookies } from "react-cookie";
@@ -23,13 +23,17 @@ const Login = () => {
 
   const router = useRouter();
 
-  const {
-    publicRuntimeConfig: { 
-      SQ_API_URL, 
-      SQ_VERSION, 
-      SQ_SITE_NAME 
-    },
-  } = getConfig();
+  
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_VERSION = process.env.SQ_VERSION;
+  const SQ_SITE_NAME = process.env.SQ_SITE_NAME;
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleLogin = async (e) => {
     e.preventDefault();

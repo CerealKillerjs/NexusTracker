@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { useRouter } from "next/router";
-import getConfig from "next/config";
+
 import qs from "qs";
 import slugify from "slugify";
 import { withAuthServerSideProps } from "../../utils/withAuth";
@@ -17,9 +17,8 @@ const Category = ({ results, token }) => {
     query: { category: categorySlug },
   } = router;
 
-  const {
-    publicRuntimeConfig: { SQ_TORRENT_CATEGORIES, SQ_API_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_TORRENT_CATEGORIES = JSON.parse(process.env.SQ_TORRENT_CATEGORIES || '{}');
 
   const category = Object.keys(SQ_TORRENT_CATEGORIES).find(
     (c) => slugify(c, { lower: true }) === categorySlug
@@ -58,9 +57,7 @@ export const getServerSideProps = withAuthServerSideProps(
   }) => {
     if (!token && !isPublicAccess) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-    } = getConfig();
+      const SQ_API_URL = process.env.SQ_API_URL;
 
     const params = {
       category: encodeURIComponent(category),

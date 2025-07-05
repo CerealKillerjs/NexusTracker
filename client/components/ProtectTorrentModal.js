@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import getConfig from "next/config";
+
 import styled from "styled-components";
 import css from "@styled-system/css";
 import { X } from "@styled-icons/boxicons-regular/X";
@@ -78,10 +78,13 @@ const ProtectTorrentModal = ({
   const [cookies] = useCookies();
   const { addNotification } = useContext(NotificationContext);
   const { getLocaleString } = useContext(LocaleContext);
-  const { publicRuntimeConfig: { SQ_API_URL } } = getConfig();
+  
+  const SQ_API_URL = process.env.SQ_API_URL;
   const [showConfirmUnprotect, setShowConfirmUnprotect] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
+    setMounted(true);
     setProtectedState(true);
     setPassword("");
     setConfirmPassword("");
@@ -163,7 +166,7 @@ const ProtectTorrentModal = ({
     }
   };
 
-  if (!isOpen) return null;
+  if (!mounted) return null;
 
   return (
     <ModalOverlay onClick={onClose}>

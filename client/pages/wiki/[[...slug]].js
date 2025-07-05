@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import jwt from "jsonwebtoken";
@@ -33,9 +33,9 @@ const Wiki = ({ page, allPages = [], token, userRole, slug }) => {
 
   const router = useRouter();
 
-  const {
-    publicRuntimeConfig: { SQ_SITE_NAME, SQ_API_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
+  const SQ_SITE_NAME = process.env.SQ_SITE_NAME;
 
   useEffect(() => {
     setEditing(false);
@@ -132,7 +132,7 @@ const Wiki = ({ page, allPages = [], token, userRole, slug }) => {
         <Text as="h1">{page?.title ?? `${SQ_SITE_NAME} wiki`}</Text>
         {userRole === "admin" && !editing && (
           <Box display="flex" alignItems="center">
-            <Link href="/wiki/new" passHref>
+            <Link href="/wiki/new" legacyBehavior>
               <Button as="a" variant="secondary">
                 {getLocaleString("wikiAddPage")}
               </Button>
@@ -170,7 +170,7 @@ const Wiki = ({ page, allPages = [], token, userRole, slug }) => {
               )}{" "}
               {getLocaleString("reqBy")}{" "}
               {page.createdBy?.username ? (
-                <Link href={`/user/${page.createdBy.username}`} passHref>
+                <Link href={`/user/${page.createdBy.username}`} legacyBehavior>
                   <a>{page.createdBy.username}</a>
                 </Link>
               ) : (
@@ -193,7 +193,7 @@ const Wiki = ({ page, allPages = [], token, userRole, slug }) => {
                       return href.startsWith("http") ? (
                         <a href={href} target="_blank" {...props} />
                       ) : (
-                        <Link href={href} passHref>
+                        <Link href={href} legacyBehavior>
                           <a {...props} />
                         </Link>
                       );
@@ -220,7 +220,7 @@ const Wiki = ({ page, allPages = [], token, userRole, slug }) => {
                   {getLocaleString("wikiPages")}
                 </Text>
                 {allPages.sort(sortSlug).map((p) => (
-                  <Link key={`page-${p.slug}`} href={`/wiki${p.slug}`} passHref>
+                  <Link key={`page-${p.slug}`} href={`/wiki${p.slug}`} legacyBehavior>
                     <Text as="a" display="block">
                       {p.title}
                     </Text>
@@ -248,7 +248,7 @@ const Wiki = ({ page, allPages = [], token, userRole, slug }) => {
       ) : Array.isArray(allPages) && allPages.length > 0 ? (
         <>
           {allPages.map((p) => (
-            <Link key={`page-${p.slug}`} href={`/wiki${p.slug}`} passHref>
+            <Link key={`page-${p.slug}`} href={`/wiki${p.slug}`} legacyBehavior>
               <Text as="a" display="block">
                 {p.title}
               </Text>
@@ -286,11 +286,6 @@ export const getServerSideProps = withAuthServerSideProps(
     // Safely handle slug
     const slug = query.slug || [];
     const parsedSlug = Array.isArray(slug) ? slug.join("/") : "";
-
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
 
     const { role } = token ? jwt.verify(token, SQ_JWT_SECRET) : { role: null };
 

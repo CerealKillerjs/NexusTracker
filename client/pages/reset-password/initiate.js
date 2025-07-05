@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import SEO from "../../components/SEO";
 import Text from "../../components/Text";
@@ -12,13 +12,7 @@ const InitiatePasswordReset = () => {
   const { setLoading } = useContext(LoadingContext);
   const { locale, setLocale, locales, getLocaleString } = useContext(LocaleContext);
 
-  const {
-    publicRuntimeConfig: { 
-      SQ_API_URL,
-      SQ_VERSION,
-      SQ_SITE_NAME 
-    },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
 
   const handleInitiate = async (e) => {
     e.preventDefault();
@@ -61,7 +55,7 @@ const InitiatePasswordReset = () => {
       <SEO title={getLocaleString("resetPassword")} />
       
       <div className="reset-header">
-        <Text as="h1" className="header-title">{SQ_SITE_NAME}</Text>
+        <Text as="h1" className="header-title">{process.env.SQ_SITE_NAME}</Text>
       </div>
       
       <div className="reset-form-container">
@@ -106,7 +100,7 @@ const InitiatePasswordReset = () => {
           >
             ■ NexusTracker
           </a>{" "}
-          v{SQ_VERSION}
+          v{process.env.SQ_VERSION}
         </p>
         
         <select 

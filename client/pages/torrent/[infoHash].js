@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import moment from "moment";
@@ -107,7 +107,7 @@ const FileItem = ({ file, depth = 0 }) => {
             iconTextWrapperProps={{ verticalAlign: "middle" }}
           >
             {file.name}
-            {file.size !== undefined ? (
+            {file.size !== undefined && file.size !== null ? (
               <>
                 {" "}
                 <Text as="span" color="grey">
@@ -159,17 +159,14 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
 
   const commentInputRef = useRef();
 
-  const {
-    publicRuntimeConfig: {
-      SQ_API_URL,
-      SQ_TORRENT_CATEGORIES,
-      SQ_SITE_WIDE_FREELEECH,
-      SQ_MINIMUM_RATIO,
-      SQ_MAXIMUM_HIT_N_RUNS,
-      SQ_SITE_NAME,
-      SQ_ENABLE_PROTECTED_TORRENTS = false,
-    },
-  } = getConfig();
+  
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_TORRENT_CATEGORIES = process.env.SQ_TORRENT_CATEGORIES ? JSON.parse(process.env.SQ_TORRENT_CATEGORIES) : {};
+  const SQ_SITE_WIDE_FREELEECH = process.env.SQ_SITE_WIDE_FREELEECH === 'true';
+  const SQ_MINIMUM_RATIO = process.env.SQ_MINIMUM_RATIO;
+  const SQ_MAXIMUM_HIT_N_RUNS = process.env.SQ_MAXIMUM_HIT_N_RUNS;
+  const SQ_SITE_NAME = process.env.SQ_SITE_NAME;
+  const SQ_ENABLE_PROTECTED_TORRENTS = process.env.SQ_ENABLE_PROTECTED_TORRENTS === 'true';
 
   const router = useRouter();
 
@@ -547,20 +544,21 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
     (c) => slugify(c, { lower: true }) === torrent.type
   );
 
-  const source = SQ_TORRENT_CATEGORIES[category].find(
-    (s) => slugify(s, { lower: true }) === torrent.source
-  );
+  const source = category && SQ_TORRENT_CATEGORIES[category] ? 
+    SQ_TORRENT_CATEGORIES[category].find(
+      (s) => slugify(s, { lower: true }) === torrent.source
+    ) : null;
 
-  const parsedFiles = torrent.files
+  const parsedFiles = (torrent.files || [])
     .map(({ path, size }) => ({ path: path.split("/"), size }))
     .reduce((children, { path, size }) => insert(children, path, size), []);
 
   const downloadDisabled =
     (Number(SQ_MINIMUM_RATIO) !== -1 &&
-      userStats.ratio !== -1 &&
-      userStats.ratio < Number(SQ_MINIMUM_RATIO)) ||
-    (Number(SQ_MAXIMUM_HIT_N_RUNS) !== -1 &&
-      userStats.hitnruns > Number(SQ_MAXIMUM_HIT_N_RUNS));
+      userStats?.ratio !== -1 &&
+      userStats?.ratio < Number(SQ_MINIMUM_RATIO)) ||
+    (Number(SQ_MAXIMUM_HIT_N_RUNS !== -1) &&
+      userStats?.hitnruns > Number(SQ_MAXIMUM_HIT_N_RUNS));
 
   function getImageType(data) {
     const mimeTypes = {
@@ -611,7 +609,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
               )}
             </Button>
           )}
-          {(userRole === "admin" || userId === torrent.uploadedBy._id) && (
+          {(userRole === "admin" || userId === torrent.uploadedBy?._id) && (
             <>
               <Button
                 onClick={() => setShowEditModal(true)}
@@ -654,7 +652,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
               )}
             </Button>
           ) : (
-            <Link href="/login" passHref>
+            <Link href="/login" legacyBehavior>
               <Button as="a">{getLocaleString("torrLogInDownload")}</Button>
             </Link>
           )}
@@ -667,7 +665,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
           ) : (
             <>
               {torrent.uploadedBy ? (
-                <Link href={`/user/${torrent.uploadedBy.username}`} passHref>
+                <Link href={`/user/${torrent.uploadedBy.username}`} legacyBehavior>
                   <Text as="a">{torrent.uploadedBy.username}</Text>
                 </Link>
               ) : (
@@ -678,7 +676,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
           [getLocaleString("uploadCategory")]: category ? (
             <Link
               href={`/categories/${slugify(category, { lower: true })}`}
-              passHref
+              legacyBehavior
             >
               <Text as="a">{category}</Text>
             </Link>
@@ -688,7 +686,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
               href={`/categories/${slugify(category, {
                 lower: true,
               })}?source=${slugify(source, { lower: true })}`}
-              passHref
+              legacyBehavior
             >
               <Text as="a">{source}</Text>
             </Link>
@@ -705,7 +703,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
               {torrent.infoHash}
             </Text>
           ),
-          [getLocaleString("torrSize")]: prettyBytes(torrent.size),
+          [getLocaleString("torrSize")]: torrent.size !== undefined && torrent.size !== null ? prettyBytes(torrent.size) : "Unknown",
           [getLocaleString("torrDownloads")]: torrent.downloads,
           [getLocaleString("torrSeeders")]:
             torrent.seeders !== undefined ? torrent.seeders : "?",
@@ -777,7 +775,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
         >
           {getLocaleString("uploadTags")}
         </Text>
-        {torrent.tags.filter((t) => !!t).length ? (
+        {torrent.tags && torrent.tags.filter((t) => !!t).length ? (
           <Box display="flex" flexWrap="wrap" ml={-1} mt={-1}>
             {torrent.tags.map((tag) => (
               <Box
@@ -788,7 +786,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
                 borderRadius={1}
                 m={1}
               >
-                <Link href={`/tags/${tag}`} passHref>
+                <Link href={`/tags/${tag}`} legacyBehavior>
                   <Text
                     as="a"
                     display="block"
@@ -874,8 +872,8 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
         >
           <Text as="h2">{getLocaleString("torrGroupTorr")}</Text>
           <Box display="flex" justifyContent="flex-end">
-            {!!torrent.groupTorrents.length &&
-              (userRole === "admin" || userId === torrent.uploadedBy._id) &&
+            {!!torrent.groupTorrents && torrent.groupTorrents.length &&
+              (userRole === "admin" || userId === torrent.uploadedBy?._id) &&
               hasGroup && (
                 <Button
                   onClick={handleRemoveFromGroup}
@@ -886,7 +884,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
                 </Button>
               )}
             {!!userId && (
-              <Link href={`/upload?groupWith=${torrent.infoHash}`} passHref>
+              <Link href={`/upload?groupWith=${torrent.infoHash}`} legacyBehavior>
                 <Button as="a" ml={3}>
                   {getLocaleString("torrAddTorr")}
                 </Button>
@@ -894,7 +892,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
             )}
           </Box>
         </Box>
-        {torrent.groupTorrents.length && hasGroup ? (
+        {torrent.groupTorrents && torrent.groupTorrents.length && hasGroup ? (
           <TorrentList
             torrents={torrent.groupTorrents}
             categories={SQ_TORRENT_CATEGORIES}
@@ -922,14 +920,14 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
         </Button>
       </form>
       <div className="comments-section">
-        {comments.map(comment => (
+        {comments && comments.map(comment => (
           <Comment
             key={comment._id}
             comment={{ ...comment, torrent }}
             token={token}
             userRole={userRole}
             onCommentDeleted={(commentId) => {
-              setComments(prevComments => prevComments.filter(c => c._id !== commentId));
+              setComments(prevComments => prevComments ? prevComments.filter(c => c._id !== commentId) : []);
             }}
           />
         ))}
@@ -959,7 +957,7 @@ const Torrent = ({ token, torrent = {}, userId, userRole, uid, userStats }) => {
                 category: torrent.type,
                 source: torrent.source,
                 description: torrent.description,
-                tags: torrent.tags.join(", "),
+                tags: torrent.tags ? torrent.tags.join(", ") : "",
                 mediaInfo: torrent.mediaInfo,
               }}
             />
@@ -1016,17 +1014,14 @@ export const getServerSideProps = withAuthServerSideProps(
   }) => {
     if (!token && !isPublicAccess) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { id, role } = token
       ? jwt.verify(token, SQ_JWT_SECRET)
       : { id: null, role: null };
 
     try {
-      const torrentRes = await fetch(`${SQ_API_URL}/torrent/info/${infoHash}`, {
+      const torrentRes = await fetch(`${process.env.SQ_API_URL}/torrent/info/${infoHash}`, {
         headers: fetchHeaders,
       });
 
@@ -1041,7 +1036,7 @@ export const getServerSideProps = withAuthServerSideProps(
 
       const torrent = await torrentRes.json();
 
-      const userStatsRes = await fetch(`${SQ_API_URL}/account/get-stats`, {
+      const userStatsRes = await fetch(`${process.env.SQ_API_URL}/account/get-stats`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import getConfig from "next/config";
+
 import { useRouter } from "next/router";
 import moment from "moment";
 import slugify from "slugify";
@@ -34,9 +34,13 @@ const TorrentList = ({
   token,
   userStats,
 }) => {
-  const {
-    publicRuntimeConfig: { SQ_SITE_WIDE_FREELEECH, SQ_API_URL, SQ_SITE_NAME, SQ_MINIMUM_RATIO, SQ_MAXIMUM_HIT_N_RUNS, SQ_ENABLE_PROTECTED_TORRENTS = false },
-  } = getConfig();
+  
+  const SQ_SITE_WIDE_FREELEECH = process.env.SQ_SITE_WIDE_FREELEECH === 'true';
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_SITE_NAME = process.env.SQ_SITE_NAME;
+  const SQ_MINIMUM_RATIO = process.env.SQ_MINIMUM_RATIO;
+  const SQ_MAXIMUM_HIT_N_RUNS = process.env.SQ_MAXIMUM_HIT_N_RUNS;
+  const SQ_ENABLE_PROTECTED_TORRENTS = process.env.SQ_ENABLE_PROTECTED_TORRENTS === 'true';
 
   const router = useRouter();
   const {
@@ -60,6 +64,19 @@ const TorrentList = ({
     );
   };
 
+  // Todos los hooks deben estar aquí, antes de cualquier retorno condicional
+  const [mounted, setMounted] = React.useState(false);
+  const [showDownloadModal, setShowDownloadModal] = React.useState(false);
+  const [selectedTorrent, setSelectedTorrent] = React.useState(null);
+
+  const { locale, getLocaleString } = useContext(LocaleContext);
+  const { addNotification } = useContext(NotificationContext);
+  const isFrench = locale === 'fr';
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const fetchTorrents = async () => {
       try {
@@ -78,14 +95,10 @@ const TorrentList = ({
       } catch (e) {}
     };
     if (fetchPath && token) fetchTorrents();
-  }, [sort, page]);
+  }, [sort, page, fetchPath, token, setTorrents, router.query]);
 
-  const { locale, getLocaleString } = useContext(LocaleContext);
-  const { addNotification } = useContext(NotificationContext);
-  const isFrench = locale === 'fr';
-
-  const [showDownloadModal, setShowDownloadModal] = React.useState(false);
-  const [selectedTorrent, setSelectedTorrent] = React.useState(null);
+  // Ahora el retorno condicional
+  if (!mounted) return null;
 
   // Function to handle torrent download
   const handleDownloadTorrent = async (event, torrent, password = null) => {

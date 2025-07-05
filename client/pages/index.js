@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { withAuthServerSideProps } from "../utils/withAuth";
@@ -31,13 +31,13 @@ const PublicLanding = ({ name, allowRegister }) => {
       </Text>
       <Box display="flex" mt={4}>
         <Box>
-          <Link href="/login">
+          <Link href="/login" legacyBehavior>
             <a>{getLocaleString("logIn")}</a>
           </Link>
         </Box>
         {allowRegister && (
           <Box ml={4}>
-            <Link href="/register">
+            <Link href="/register" legacyBehavior>
               <a>{getLocaleString("register")}</a>
             </Link>
           </Box>
@@ -54,14 +54,11 @@ const Index = ({
   emailVerified,
   userStats,
 }) => {
-  const {
-    publicRuntimeConfig: {
-      SQ_SITE_NAME,
-      SQ_ALLOW_REGISTER,
-      SQ_TORRENT_CATEGORIES,
-      SQ_API_URL,
-    },
-  } = getConfig();
+  
+  const SQ_SITE_NAME = process.env.SQ_SITE_NAME;
+  const SQ_ALLOW_REGISTER = process.env.SQ_ALLOW_REGISTER;
+  const SQ_TORRENT_CATEGORIES = process.env.SQ_TORRENT_CATEGORIES ? JSON.parse(process.env.SQ_TORRENT_CATEGORIES) : {};
+  const SQ_API_URL = process.env.SQ_API_URL;
 
   const router = useRouter();
 
@@ -99,7 +96,7 @@ const Index = ({
         </Infobox>
       )}
       {latestAnnouncement && (
-        <Link href={`/announcements/${latestAnnouncement.slug}`} passHref>
+        <Link href={`/announcements/${latestAnnouncement.slug}`} legacyBehavior>
           <Box
             as="a"
             _css={{
@@ -133,7 +130,7 @@ const Index = ({
                 {latestAnnouncement.createdBy?.username ? (
                   <Link
                     href={`/user/${latestAnnouncement.createdBy.username}`}
-                    passHref
+                    legacyBehavior
                   >
                     <a>{latestAnnouncement.createdBy.username}</a>
                   </Link>
@@ -149,13 +146,13 @@ const Index = ({
         {getLocaleString("indexLatestTorrents")}
       </Text>
       <TorrentList
-        torrents={latestTorrents}
+        torrents={Array.isArray(latestTorrents) ? latestTorrents : []}
         setTorrents={() => {}}
-        categories={SQ_TORRENT_CATEGORIES}
-        total={latestTorrents.length}
+        categories={SQ_TORRENT_CATEGORIES || {}}
+        total={Array.isArray(latestTorrents) ? latestTorrents.length : 0}
         fetchPath={`${SQ_API_URL}/torrent/latest`}
-        token={token}
-        userStats={userStats}
+        token={token || ''}
+        userStats={userStats || {}}
       />
     </>
   );
@@ -165,9 +162,8 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-    } = getConfig();
+    
+    const SQ_API_URL = process.env.SQ_API_URL;
 
     try {
       const latestTorrentsRes = await fetch(`${SQ_API_URL}/torrent/latest`, {

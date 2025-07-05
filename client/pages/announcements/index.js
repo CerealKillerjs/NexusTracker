@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import jwt from "jsonwebtoken";
 import moment from "moment";
@@ -25,21 +25,21 @@ const Announcements = ({ announcements, pinnedAnnouncements, userRole }) => {
       >
         <Text as="h1">{getLocaleString("navAnnouncements")}</Text>
         {userRole === "admin" && (
-          <Link href="/announcements/new" passHref>
+          <Link href="/announcements/new" legacyBehavior>
             <a>
               <Button>{getLocaleString("reqCreateNew")}</Button>
             </a>
           </Link>
         )}
       </Box>
-      {!!pinnedAnnouncements.length && (
+      {!!(pinnedAnnouncements || []).length && (
         <>
           <Box mb={5}>
             <Text as="h3" mb={4}>
               {getLocaleString("annPinnedAnnounce")}
             </Text>
             <List
-              data={pinnedAnnouncements.map((announcement) => ({
+              data={(pinnedAnnouncements || []).map((announcement) => ({
                 ...announcement,
                 href: `/announcements/${announcement.slug}`,
               }))}
@@ -76,7 +76,7 @@ const Announcements = ({ announcements, pinnedAnnouncements, userRole }) => {
         </>
       )}
       <List
-        data={announcements.map((announcement) => ({
+        data={(announcements || []).map((announcement) => ({
           ...announcement,
           href: `/announcements/${announcement.slug}`,
         }))}
@@ -114,10 +114,8 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_API_URL = process.env.SQ_API_URL;
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { role } = jwt.verify(token, SQ_JWT_SECRET);
 

@@ -80,12 +80,12 @@ module.exports = {
     // This configuration will work regardless of HTTP or HTTPS Protocol
     // For local development, this should be http://127.0.0.1 or `http://ipaddress` if running in VPS
     // For HTTPS/domain-name make sure to change the SQ_BASE_URL and SQ_API_URL to https://domain-name and https://domain-name/api
-    SQ_BASE_URL: "http://ipaddress", 
+    SQ_BASE_URL: "http://127.0.0.1", 
 
     // The URL of your API. Under the recommended setup, it should be `${SQ_BASE_URL}/api`.
     // This configuration will worl regardless of HTTP or HTTPS Protocol
     // For local development, this should be `http://127.0.0.1:3001` or `http://ipaddress/api` if running in VPS
-    SQ_API_URL: "http://ipaddress/api",
+    SQ_API_URL: "http://127.0.0.1:3001",
 
     // ADD LAST SEEN FEATURE
     // Enable or disable the "last seen" feature
@@ -103,7 +103,7 @@ module.exports = {
   secrets: {
     // The URL of your MongoDB server.
     // You will need a separate container for the MongoDB (This is provided in the Readme)
-    SQ_MONGO_URL: "mongodb://username:password@ipaddress:27017/nexustracker",
+    SQ_MONGO_URL: "mongodb://test:test@192.168.1.55:27017/nexustracker",
 
     // Disables sending of any emails and removes the need for an SMTP server.
     // Fine for testing, not recommended in production as users will not be able to reset their passwords.

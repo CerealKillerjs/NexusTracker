@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import getConfig from "next/config";
+
 import jwt from "jsonwebtoken";
 import { withAuthServerSideProps } from "../utils/withAuth";
 import LocaleContext from "../utils/LocaleContext";
@@ -145,16 +145,18 @@ const AdminPanel = ({ token, userRole }) => {
   const [sortOrder, setSortOrder] = useState('desc');
   // End of Protect Torrent Feature
   const router = useRouter();
-  const { publicRuntimeConfig: { SQ_DEFAULT_TIMEZONE } } = getConfig();
+  
+  const SQ_DEFAULT_TIMEZONE = process.env.SQ_DEFAULT_TIMEZONE;
   // ADD PROTECT TORRENT FEATURE
-  const { publicRuntimeConfig: { SQ_ENABLE_PROTECTED_TORRENTS = false } } = getConfig();
+  
+  const SQ_ENABLE_PROTECTED_TORRENTS = process.env.SQ_ENABLE_PROTECTED_TORRENTS === 'true';
   // End of Protect Torrent Feature
 
   // Fetch current admin's timezone on mount
   useEffect(() => {
     const fetchViewer = async () => {
       try {
-        const res = await fetch(`${getConfig().publicRuntimeConfig.SQ_API_URL}/user/${router.query?.admin || 'admin'}`, {
+        const res = await fetch(`${process.env.SQ_API_URL}/user/${router.query?.admin || 'admin'}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -184,7 +186,7 @@ const AdminPanel = ({ token, userRole }) => {
         queryParams.append('search', searchTerm);
       }
       const res = await fetch(
-        `${getConfig().publicRuntimeConfig.SQ_API_URL}/users?${queryParams.toString()}`,
+        `${process.env.SQ_API_URL}/users?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -207,7 +209,7 @@ const AdminPanel = ({ token, userRole }) => {
       setLoading(true);
       
       const res = await fetch(
-        `${getConfig().publicRuntimeConfig.SQ_API_URL}/admin/stats`,
+        `${process.env.SQ_API_URL}/admin/stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -233,7 +235,7 @@ const AdminPanel = ({ token, userRole }) => {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${getConfig().publicRuntimeConfig.SQ_API_URL}/reports`, {
+      const res = await fetch(`${process.env.SQ_API_URL}/reports`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -251,7 +253,7 @@ const AdminPanel = ({ token, userRole }) => {
   const fetchProtectedTorrents = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${getConfig().publicRuntimeConfig.SQ_API_URL}/torrent/all`, {
+      const res = await fetch(`${process.env.SQ_API_URL}/torrent/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -302,7 +304,7 @@ const AdminPanel = ({ token, userRole }) => {
   // Fetch logs for a given torrent
   const fetchProtectedLogs = async (infoHash) => {
     try {
-      const res = await fetch(`${getConfig().publicRuntimeConfig.SQ_API_URL}/protect-torrent/logs/${infoHash}`, {
+      const res = await fetch(`${process.env.SQ_API_URL}/protect-torrent/logs/${infoHash}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -345,7 +347,7 @@ const AdminPanel = ({ token, userRole }) => {
       // Determine whether to ban or unban based on current status
       const endpoint = user.banned ? 'unban' : 'ban';
       
-      await fetch(`${getConfig().publicRuntimeConfig.SQ_API_URL}/user/${endpoint}/${user.username}`, {
+      await fetch(`${process.env.SQ_API_URL}/user/${endpoint}/${user.username}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -362,7 +364,7 @@ const AdminPanel = ({ token, userRole }) => {
   const handleDeleteUser = async (user) => {
     try {
       if (window.confirm(getLocaleString("adminDeleteUserConfirm").replace("{username}", user.username))) {
-        await fetch(`${getConfig().publicRuntimeConfig.SQ_API_URL}/user/${user.username}`, {
+        await fetch(`${process.env.SQ_API_URL}/user/${user.username}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -417,7 +419,7 @@ const AdminPanel = ({ token, userRole }) => {
     try {
       setLoading(true);
       const res = await fetch(
-        `${getConfig().publicRuntimeConfig.SQ_API_URL}/reports/resolve/${reportId}`,
+        `${process.env.SQ_API_URL}/reports/resolve/${reportId}`,
         {
           method: "POST",
           headers: {
@@ -539,7 +541,7 @@ const AdminPanel = ({ token, userRole }) => {
                     users.map(user => (
                       <StyledTr key={user._id}>
                         <StyledTd>
-                          <Link href={`/user/${user.username}`} passHref>
+                          <Link href={`/user/${user.username}`} legacyBehavior>
                             <Text as="a">{user.username}</Text>
                           </Link>
                         </StyledTd>
@@ -780,7 +782,7 @@ const AdminPanel = ({ token, userRole }) => {
                   {protectedTorrents.map(torrent => (
                     <StyledTr key={torrent._id || torrent.infoHash}>
                       <StyledTd>
-                        <Link href={`/torrent/${torrent.infoHash}`} passHref>
+                        <Link href={`/torrent/${torrent.infoHash}`} legacyBehavior>
                           <Text as="a" fontWeight="bold">{torrent.name || torrent.infoHash}</Text>
                         </Link>
                         <Text fontFamily="mono" fontSize="xs" color="grey" mt={1}>{torrent.infoHash}</Text>
@@ -812,7 +814,7 @@ const AdminPanel = ({ token, userRole }) => {
                   {unprotectedTorrents.map(torrent => (
                     <StyledTr key={torrent._id || torrent.infoHash}>
                       <StyledTd>
-                        <Link href={`/torrent/${torrent.infoHash}`} passHref>
+                        <Link href={`/torrent/${torrent.infoHash}`} legacyBehavior>
                           <Text as="a" fontWeight="bold">{torrent.name || torrent.infoHash}</Text>
                         </Link>
                         <Text fontFamily="mono" fontSize="xs" color="grey" mt={1}>{torrent.infoHash}</Text>
@@ -842,7 +844,7 @@ const AdminPanel = ({ token, userRole }) => {
 
 export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
-    const { role } = jwt.verify(token, getConfig().serverRuntimeConfig.SQ_JWT_SECRET);
+    const { role } = jwt.verify(token, process.env.SQ_JWT_SECRET);
     return { props: { token, userRole: role } };
   }
 );

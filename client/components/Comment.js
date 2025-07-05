@@ -9,10 +9,10 @@ import Box from "./Box";
 import Text from "./Text";
 import { NotificationContext } from './Notifications';
 import LocaleContext from '../utils/LocaleContext';
-import getConfig from 'next/config';
 import styled from 'styled-components';
 
-const { publicRuntimeConfig: { SQ_API_URL } } = getConfig();
+
+  const SQ_API_URL = process.env.SQ_API_URL;
 
 // Add a styled component for the title
 const TitleText = styled(Text)`
@@ -83,7 +83,7 @@ const Comment = ({ comment, token, userRole, onCommentDeleted }) => {
         <Text color="grey" icon={CommentIcon} mb={[2, 0]}>
           {getLocaleString("comCommentBy")}{" "}
           {comment.user?.username ? (
-            <Link href={`/user/${comment.user.username}`} passHref>
+            <Link href={`/user/${comment.user.username}`} legacyBehavior>
               <TitleText as="a">{comment.user.username}</TitleText>
             </Link>
           ) : (
@@ -93,19 +93,19 @@ const Comment = ({ comment, token, userRole, onCommentDeleted }) => {
           )}{" "}
           {getLocaleString("comOn")}{" "}
           {comment.type === "torrent" && comment.torrent ? (
-            <Link href={`/torrent/${comment.torrent.infoHash}`} passHref>
+            <Link href={`/torrent/${comment.torrent.infoHash}`} legacyBehavior>
               <TitleText as="a" icon={File} iconColor="primary">
                 {comment.torrent.name}
               </TitleText>
             </Link>
           ) : comment.type === "announcement" && comment.announcement ? (
-            <Link href={`/announcements/${comment.announcement.slug}`} passHref>
+            <Link href={`/announcements/${comment.announcement.slug}`} legacyBehavior>
               <TitleText as="a" icon={News} iconColor="primary">
                 {comment.announcement.title}
               </TitleText>
             </Link>
           ) : comment.type === "request" && comment.request ? (
-            <Link href={`/requests/${comment.request.index}`} passHref>
+            <Link href={`/requests/${comment.request.index}`} legacyBehavior>
               <TitleText as="a" icon={CommentAdd} iconColor="primary">
                 {comment.request.title}
               </TitleText>

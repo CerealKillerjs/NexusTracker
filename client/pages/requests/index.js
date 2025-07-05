@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import jwt from "jsonwebtoken";
 import moment from "moment";
@@ -26,14 +26,14 @@ const Requests = ({ requests }) => {
         mb={5}
       >
         <Text as="h1">{getLocaleString("navRequests")}</Text>
-        <Link href="/requests/new" passHref>
+        <Link href="/requests/new" legacyBehavior>
           <a>
             <Button>{getLocaleString("reqCreateNew")}</Button>
           </a>
         </Link>
       </Box>
       <List
-        data={requests.map((request) => ({
+        data={(requests || []).map((request) => ({
           ...request,
           href: `/requests/${request.index}`,
         }))}
@@ -81,10 +81,8 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_API_URL = process.env.SQ_API_URL;
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { role } = jwt.verify(token, SQ_JWT_SECRET);
 

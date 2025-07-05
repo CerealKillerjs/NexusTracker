@@ -1,5 +1,4 @@
 import React, { useState, useContext } from "react";
-import getConfig from "next/config";
 import styled from "styled-components";
 import css from "@styled-system/css";
 import { X } from "@styled-icons/boxicons-regular/X";
@@ -72,10 +71,17 @@ const DownloadProtectedTorrentModal = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [cookies] = useCookies();
-  
   const { addNotification } = useContext(NotificationContext);
   const { getLocaleString } = useContext(LocaleContext);
-  const { publicRuntimeConfig: { SQ_API_URL } } = getConfig();
+  
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -14,6 +14,7 @@ import {
   toggleBookmark,
   listTags,
   downloadTorrent,
+  debugTorrent,
 } from "../controllers/torrent";
 import { deleteComment } from "../controllers/Comment";
 import { createReport } from "../controllers/moderation";
@@ -36,6 +37,7 @@ export default (tracker) => {
   router.get("/all", listAll);
   router.get("/search", searchTorrents(tracker));
   router.get("/tags", listTags);
+  router.get("/debug/:infoHash", debugTorrent);
   router.post("/download/:infoHash", downloadTorrent);
   router.delete('/comment/:commentId', auth, async (req, res) => {
     return deleteComment(req, res);

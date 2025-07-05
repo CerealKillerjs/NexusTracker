@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import jwt from "jsonwebtoken";
 import moment from "moment";
 import SEO from "../../components/SEO";
@@ -68,17 +68,14 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { role } = jwt.verify(token, SQ_JWT_SECRET);
 
     if (role !== "admin") return { props: { reports: [], userRole: role } };
 
     try {
-      const reportsRes = await fetch(`${SQ_API_URL}/reports/page/0`, {
+      const reportsRes = await fetch(`${process.env.SQ_API_URL}/reports/page/0`, {
         headers: fetchHeaders,
       });
       if (

@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import Button from "./Button";
 import { NotificationContext } from "./Notifications";
 import LoadingContext from "../utils/LoadingContext";
@@ -10,9 +10,15 @@ const ResendVerification = ({ token }) => {
   const { setLoading } = useContext(LoadingContext);
   const { getLocaleString } = useContext(LocaleContext);
 
-  const {
-    publicRuntimeConfig: { SQ_API_URL },
-  } = getConfig();
+  
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleResend = async () => {
     try {
