@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
 import jwt from "jsonwebtoken";
@@ -25,14 +25,18 @@ const Register = ({ token: inviteToken, tokenError }) => {
 
   const router = useRouter();
 
-  const {
-    publicRuntimeConfig: { 
-      SQ_API_URL, 
-      SQ_ALLOW_REGISTER, 
-      SQ_VERSION, 
-      SQ_SITE_NAME 
-    },
-  } = getConfig();
+  
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_ALLOW_REGISTER = process.env.SQ_ALLOW_REGISTER;
+  const SQ_VERSION = process.env.SQ_VERSION;
+  const SQ_SITE_NAME = process.env.SQ_SITE_NAME;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -547,9 +551,9 @@ const Register = ({ token: inviteToken, tokenError }) => {
 };
 
 export const getServerSideProps = async ({ query: { token } }) => {
-  const {
-    serverRuntimeConfig: { SQ_JWT_SECRET, SQ_ALLOW_REGISTER },
-  } = getConfig();
+  
+  const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
+  const SQ_ALLOW_REGISTER = process.env.SQ_ALLOW_REGISTER;
   if (SQ_ALLOW_REGISTER === "open") return { props: {} };
   if (!token && SQ_ALLOW_REGISTER === "invite")
     return { props: { tokenError: "Invite token not provided" } };

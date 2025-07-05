@@ -1,5 +1,5 @@
 import React, { useState, useContext, useMemo } from "react"; // ADD LAST SEEN FEATURE (Added useMemo)
-import getConfig from "next/config";
+
 import { useRouter } from "next/router";
 import moment from "moment";
 import copy from "copy-to-clipboard";
@@ -98,17 +98,8 @@ const Account = ({ token, invites = [], user, userRole }) => {
 
   const theme = useContext(ThemeContext);
 
-  const {
-    publicRuntimeConfig: {
-      SQ_API_URL,
-      SQ_BP_EARNED_PER_GB,
-      SQ_BP_EARNED_PER_FILLED_REQUEST,
-      SQ_BP_COST_PER_INVITE,
-      SQ_BP_COST_PER_GB,
-      SQ_ALLOW_REGISTER,
-      SQ_DISABLE_EMAIL,
-    },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
   const router = useRouter();
 
@@ -784,10 +775,8 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_API_URL = process.env.SQ_API_URL;
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { role, username } = jwt.verify(token, SQ_JWT_SECRET);
 

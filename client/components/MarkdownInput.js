@@ -42,7 +42,7 @@ const MarkdownInput = ({ defaultValue, mb, ...rest }) => {
                   return href.startsWith("http") ? (
                     <a href={href} target="_blank" {...props} />
                   ) : (
-                    <Link href={href} passHref>
+                    <Link href={href} legacyBehavior>
                       <a {...props} />
                     </Link>
                   );

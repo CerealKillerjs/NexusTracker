@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import getConfig from "next/config";
+
 import { useRouter } from "next/router";
 import jwt from "jsonwebtoken";
 import slugify from "slugify";
@@ -17,9 +17,8 @@ import LocaleContext from "../../utils/LocaleContext";
 export const WikiFields = ({ values }) => {
   const [slugValue, setSlugValue] = useState(values?.slug);
 
-  const {
-    publicRuntimeConfig: { SQ_BASE_URL, SQ_ALLOW_UNREGISTERED_VIEW },
-  } = getConfig();
+  const SQ_BASE_URL = process.env.SQ_BASE_URL;
+  const SQ_ALLOW_UNREGISTERED_VIEW = process.env.SQ_ALLOW_UNREGISTERED_VIEW === 'true';
 
   const { getLocaleString } = useContext(LocaleContext);
 
@@ -90,9 +89,7 @@ const NewWiki = ({ token, userRole }) => {
 
   const router = useRouter();
 
-  const {
-    publicRuntimeConfig: { SQ_API_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -153,9 +150,7 @@ const NewWiki = ({ token, userRole }) => {
 export const getServerSideProps = withAuthServerSideProps(async ({ token }) => {
   if (!token) return { props: {} };
 
-  const {
-    serverRuntimeConfig: { SQ_JWT_SECRET },
-  } = getConfig();
+  const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
   const { role } = jwt.verify(token, SQ_JWT_SECRET);
 

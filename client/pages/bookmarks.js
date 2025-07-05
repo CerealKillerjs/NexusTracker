@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import { useRouter } from "next/router";
 import qs from "qs";
 import { withAuthServerSideProps } from "../utils/withAuth";
@@ -9,9 +9,7 @@ import TorrentList from "../components/TorrentList";
 import LocaleContext from "../utils/LocaleContext";
 
 const Bookmarks = ({ results }) => {
-  const {
-    publicRuntimeConfig: { SQ_TORRENT_CATEGORIES },
-  } = getConfig();
+  const SQ_TORRENT_CATEGORIES = JSON.parse(process.env.SQ_TORRENT_CATEGORIES || '{}');
 
   const { getLocaleString } = useContext(LocaleContext);
 
@@ -38,9 +36,7 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-    } = getConfig();
+    const SQ_API_URL = process.env.SQ_API_URL;
 
     try {
       const bookmarksRes = await fetch(`${SQ_API_URL}/account/bookmarks`, {

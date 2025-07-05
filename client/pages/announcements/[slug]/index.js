@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import moment from "moment";
@@ -32,9 +32,8 @@ const Announcement = ({ announcement, token, userRole }) => {
 
   const commentInputRef = useRef();
 
-  const {
-    publicRuntimeConfig: { SQ_API_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
   const router = useRouter();
 
@@ -223,7 +222,7 @@ const Announcement = ({ announcement, token, userRole }) => {
                 ? `${getLocaleString("annUnpin")}`
                 : `${getLocaleString("annPin")}`}
             </Button>
-            <Link href={`${router.asPath}/edit`} passHref>
+            <Link href={`${router.asPath}/edit`} legacyBehavior>
               <a>
                 <Button variant="secondary" mr={3}>
                   {getLocaleString("torrEdit")}
@@ -247,7 +246,7 @@ const Announcement = ({ announcement, token, userRole }) => {
           )}{" "}
           {getLocaleString("reqBy")}{" "}
           {announcement.createdBy?.username ? (
-            <Link href={`/user/${announcement.createdBy.username}`} passHref>
+            <Link href={`/user/${announcement.createdBy.username}`} legacyBehavior>
               <a>{announcement.createdBy.username}</a>
             </Link>
           ) : (
@@ -344,16 +343,13 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders, query: { slug } }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { role } = jwt.verify(token, SQ_JWT_SECRET);
 
     try {
       const announcementRes = await fetch(
-        `${SQ_API_URL}/announcements/${slug}`,
+        `${process.env.SQ_API_URL}/announcements/${slug}`,
         {
           headers: fetchHeaders,
         }

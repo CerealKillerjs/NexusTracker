@@ -1,13 +1,11 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import SEO from "../components/SEO";
 import Text from "../components/Text";
 import LocaleContext from "../utils/LocaleContext";
 
 const Rss = () => {
-  const {
-    publicRuntimeConfig: { SQ_BASE_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
 
   const { getLocaleString } = useContext(LocaleContext);
 
@@ -19,7 +17,7 @@ const Rss = () => {
       </Text>
       <Text mb={4}>
         {getLocaleString("rssThereRSSFeedAt")}{" "}
-        <strong>{SQ_BASE_URL}/api/rss</strong>.
+        <strong>{SQ_API_URL}/api/rss</strong>.
       </Text>
       <Text mb={4}>
         {getLocaleString("rssToAuthenticateYourself")}{" "}

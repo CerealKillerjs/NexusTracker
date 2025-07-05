@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import getConfig from "next/config";
+
 import { useRouter } from "next/router";
 import qs from "qs";
 import { withAuthServerSideProps } from "../../utils/withAuth";
@@ -24,9 +24,8 @@ const Search = ({ results, error, token }) => {
   } = router;
   query = query ? decodeURIComponent(query) : "";
 
-  const {
-    publicRuntimeConfig: { SQ_TORRENT_CATEGORIES, SQ_API_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_TORRENT_CATEGORIES = JSON.parse(process.env.SQ_TORRENT_CATEGORIES || '{}');
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -42,13 +41,13 @@ const Search = ({ results, error, token }) => {
       <SEO
         title={
           query
-            ? `${getLocaleString("searchSearchResults")} “${query}”`
+            ? `${getLocaleString("searchSearchResults")} " ${query} "`
             : `${getLocaleString("indexSearch")}`
         }
       />
       <Text as="h1" mb={5}>
         {query
-          ? `${getLocaleString("searchSearchResults")} “${query}”`
+          ? `${getLocaleString("searchSearchResults")} " ${query} "`
           : `${getLocaleString("indexSearch")}`}
       </Text>
       <Box as="form" onSubmit={handleSearch} display="flex" mb={5}>
@@ -87,9 +86,7 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders, query: { query, page: pageParam } }) => {
     if (!token || !query) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-    } = getConfig();
+    const SQ_API_URL = process.env.SQ_API_URL;
 
     const params = {
       query: encodeURIComponent(query),

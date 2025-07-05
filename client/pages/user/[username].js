@@ -1,5 +1,5 @@
 import React, { useState, useContext, useMemo } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useCookies } from "react-cookie";
 import moment from "moment";
@@ -41,10 +41,9 @@ const User = ({ token, user, userRole }) => {
       SQ_TORRENT_CATEGORIES,
       SQ_MINIMUM_RATIO,
       SQ_MAXIMUM_HIT_N_RUNS,
-      SQ_API_URL,
       SQ_DEFAULT_TIMEZONE,
     },
-  } = getConfig();
+  } = process.env;
 
   const downloadedBytes = prettyBytes(user.downloaded?.bytes || 0).split(" ");
   const uploadedBytes = prettyBytes(user.uploaded?.bytes || 0).split(" ");
@@ -372,9 +371,8 @@ export const getServerSideProps = withAuthServerSideProps(
     if (!token) return { props: {} };
 
     const {
-      publicRuntimeConfig: { SQ_API_URL },
       serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    } = process.env;
 
     const { role } = jwt.verify(token, SQ_JWT_SECRET);
 

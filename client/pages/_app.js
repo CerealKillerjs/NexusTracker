@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import App from "next/app";
 import Head from "next/head";
 import Router, { useRouter } from "next/router";
-import getConfig from "next/config";
+
 import styled, {
   ThemeProvider,
   createGlobalStyle,
@@ -74,7 +74,7 @@ const getThemeColours = (themeName, customTheme = {}) => {
 };
 
 const baseTheme = {
-  breakpoints: ['481px', '601px', '769px', '1025px'],
+  breakpoints: ["481px", "601px", "769px", "1025px"],
   space: [0, 2, 4, 8, 16, 32, 64, 128, 256],
   sizes: {
     body: "1200px",
@@ -187,10 +187,11 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
   const [layoutIsReady, setLayoutIsReady] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  const isAuthPage = router.pathname === "/login" || 
-                     router.pathname === "/register" || 
-                     router.pathname.startsWith("/reset-password") ||
-                     (router.pathname === "/" && !token);
+  const isAuthPage =
+    router.pathname === "/login" ||
+    router.pathname === "/register" ||
+    router.pathname.startsWith("/reset-password") ||
+    (router.pathname === "/" && !token);
 
   useEffect(() => {
     setIsClient(true);
@@ -229,17 +230,14 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
     }
   };
 
-  const {
-    publicRuntimeConfig: {
-      SQ_CUSTOM_THEME,
-      SQ_SITE_WIDE_FREELEECH,
-      SQ_API_URL,
-      SQ_MINIMUM_RATIO,
-      SQ_MAXIMUM_HIT_N_RUNS,
-      SQ_SITE_DEFAULT_LOCALE,
-      SQ_SITE_NAME,
-    },
-  } = getConfig();
+  
+  const SQ_CUSTOM_THEME = process.env.SQ_CUSTOM_THEME ? JSON.parse(process.env.SQ_CUSTOM_THEME) : {};
+  const SQ_SITE_WIDE_FREELEECH = process.env.SQ_SITE_WIDE_FREELEECH === 'true';
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_MINIMUM_RATIO = process.env.SQ_MINIMUM_RATIO;
+  const SQ_MAXIMUM_HIT_N_RUNS = process.env.SQ_MAXIMUM_HIT_N_RUNS;
+  const SQ_SITE_DEFAULT_LOCALE = process.env.SQ_SITE_DEFAULT_LOCALE;
+  const SQ_SITE_NAME = process.env.SQ_SITE_NAME;
 
   const [locale, setLocale] = useState(SQ_SITE_DEFAULT_LOCALE ?? "en");
 
@@ -353,10 +351,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
         <title>nexustracker</title>
         <link rel="shortcut icon" href="/favicon.png" type="image/png" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Source+Code+Pro:wght@400;500;700&display=swap"
-        />
+
       </Head>
       <ThemeProvider theme={appTheme}>
         <GlobalStyle />
@@ -525,7 +520,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                             </Box>
                           )}
                           
-                          <Link href="/upload" passHref>
+                          <Link href="/upload" legacyBehavior>
                             <Button
                               as="a"
                               variant="transparent"
@@ -602,7 +597,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                                   overflow: "hidden",
                                 }}
                               >
-                                <Link href={`/user/${cookies.username}`} passHref>
+                                <Link href={`/user/${cookies.username}`} legacyBehavior>
                                   <Box
                                     as="a"
                                     display="flex"
@@ -625,7 +620,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                                 </Link>
                                 
                                 {userRole === "admin" && (
-                                  <Link href="/adminPanel" passHref>
+                                  <Link href="/adminPanel" legacyBehavior>
                                     <Box
                                       as="a"
                                       display="flex"
@@ -648,7 +643,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                                   </Link>
                                 )}
                                 
-                                <Link href="/logout" passHref>
+                                <Link href="/logout" legacyBehavior>
                                   <Box
                                     as="a"
                                     display="flex"
@@ -720,7 +715,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                   }}
                 >
                   <Box as="nav" px={4} py={2}>
-                    <Link href="/" passHref>
+                    <Link href="/" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -738,7 +733,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href="/upload" passHref>
+                    <Link href="/upload" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -756,7 +751,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href="/categories" passHref>
+                    <Link href="/categories" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -774,7 +769,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href="/requests" passHref>
+                    <Link href="/requests" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -792,7 +787,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href="/announcements" passHref>
+                    <Link href="/announcements" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -810,7 +805,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href="/wiki" passHref>
+                    <Link href="/wiki" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -828,7 +823,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href="/rss" passHref>
+                    <Link href="/rss" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -846,7 +841,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href="/bookmarks" passHref>
+                    <Link href="/bookmarks" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -864,7 +859,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Box>
                     </Link>
 
-                    <Link href={`/user/${cookies.username}`} passHref>
+                    <Link href={`/user/${cookies.username}`} legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -883,7 +878,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                     </Link>
 
                     {userRole === "admin" && (
-                      <Link href="/adminPanel" passHref>
+                      <Link href="/adminPanel" legacyBehavior>
                         <Box
                           as="a"
                           display="flex"
@@ -902,7 +897,7 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
                       </Link>
                     )}
 
-                    <Link href="/logout" passHref>
+                    <Link href="/logout" legacyBehavior>
                       <Box
                         as="a"
                         display="flex"
@@ -1009,6 +1004,8 @@ const NexusTracker = ({ Component, pageProps, initialTheme }) => {
   );
 };
 
+// En Next.js 15, getInitialProps en _app.js está deprecado
+// Usamos getServerSideProps en páginas individuales o context para el tema
 NexusTracker.getInitialProps = async (appContext) => {
   const { theme } = appContext?.ctx?.req?.cookies || {};
   const appInitialProps = App.getInitialProps(appContext);

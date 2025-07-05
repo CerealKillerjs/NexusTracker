@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import styled from "styled-components";
 import css from "@styled-system/css";
@@ -27,9 +27,7 @@ const CategoryItem = styled.li(() =>
 );
 
 const Categories = ({ tags }) => {
-  const {
-    publicRuntimeConfig: { SQ_TORRENT_CATEGORIES },
-  } = getConfig();
+  const SQ_TORRENT_CATEGORIES = process.env.SQ_TORRENT_CATEGORIES ? JSON.parse(process.env.SQ_TORRENT_CATEGORIES) : {};
   const { getLocaleString } = useContext(LocaleContext);
 
   return (
@@ -51,7 +49,7 @@ const Categories = ({ tags }) => {
               <CategoryItem key={category}>
                 <Link
                   href={`/categories/${slugify(category, { lower: true })}`}
-                  passHref
+                  legacyBehavior
                 >
                   <a>{category}</a>
                 </Link>
@@ -78,7 +76,7 @@ const Categories = ({ tags }) => {
               borderRadius={1}
               m={1}
             >
-              <Link href={`/tags/${tag}`} passHref>
+              <Link href={`/tags/${tag}`} legacyBehavior>
                 <Text
                   as="a"
                   display="block"
@@ -104,9 +102,7 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders, isPublicAccess }) => {
     if (!token && !isPublicAccess) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-    } = getConfig();
+    const SQ_API_URL = process.env.SQ_API_URL;
 
     try {
       const tagsRes = await fetch(`${SQ_API_URL}/torrent/tags`, {

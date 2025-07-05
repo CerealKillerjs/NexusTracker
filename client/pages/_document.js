@@ -17,12 +17,10 @@ class CustomDocument extends Document {
       const initialProps = await Document.getInitialProps(ctx);
       return {
         ...initialProps,
-        styles: (
-          <>
-            {initialProps.styles}
-            {sheet.getStyleElement()}
-          </>
-        ),
+        styles: [
+          ...React.Children.toArray(initialProps.styles),
+          sheet.getStyleElement(),
+        ],
       };
     } finally {
       sheet.seal();
@@ -32,7 +30,12 @@ class CustomDocument extends Document {
   render() {
     return (
       <Html lang="en">
-        <Head />
+        <Head>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Source+Code+Pro:wght@400;500;700&display=swap"
+          />
+        </Head>
         <body>
           <Main />
           <NextScript />

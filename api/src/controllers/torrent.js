@@ -132,6 +132,9 @@ export const uploadTorrent = async (req, res, next) => {
         }
       }
 
+      console.log('DEBUG: req.userId =', req.userId);
+      console.log('DEBUG: req.userId type =', typeof req.userId);
+      
       const newTorrent = new Torrent({
         name: req.body.name,
         description: req.body.description,
@@ -160,7 +163,10 @@ export const uploadTorrent = async (req, res, next) => {
         protectedPassword: req.body.protectedPassword || null,
         protectedLogs: [],
       });
+      
+      console.log('DEBUG: newTorrent.uploadedBy =', newTorrent.uploadedBy);
       await newTorrent.save();
+      console.log('DEBUG: Torrent saved with uploadedBy =', newTorrent.uploadedBy);
 
       if (groupId) await addToGroup(groupId, infoHash);
 
@@ -357,17 +363,9 @@ export const fetchTorrent = (tracker) => async (req, res, next) => {
       {
         $lookup: {
           from: "users",
+          localField: "uploadedBy",
+          foreignField: "_id",
           as: "uploadedBy",
-          let: { userId: "$uploadedBy" },
-          pipeline: [
-            { $match: { $expr: { $eq: ["$_id", "$$userId"] } } },
-            {
-              $project: {
-                username: 1,
-                created: 1,
-              },
-            },
-          ],
         },
       },
       { $unwind: { path: "$uploadedBy", preserveNullAndEmptyArrays: true } },
@@ -474,6 +472,14 @@ export const fetchTorrent = (tracker) => async (req, res, next) => {
       }
     }
 
+    // Debug: Log the torrent data to see what's happening
+    console.log('=== DEBUG TORRENT INFO ===');
+    console.log('Torrent uploadedBy (raw):', torrent.uploadedBy);
+    console.log('Torrent uploadedBy type:', typeof torrent.uploadedBy);
+    console.log('Torrent data (full):', JSON.stringify(torrent, null, 2));
+    console.log('Embellished torrent uploadedBy:', embellishedTorrent.uploadedBy);
+    console.log('=== END DEBUG ===');
+    
     res.json({ ...embellishedTorrent, groupTorrents });
   } catch (e) {
     next(e);
@@ -962,6 +968,39 @@ export const listTags = async (req, res, next) => {
     }
 
     res.json(Array.from(uniqueTags));
+  } catch (e) {
+    next(e);
+  }
+};
+
+// Temporary debug endpoint
+export const debugTorrent = async (req, res, next) => {
+  try {
+    const { infoHash } = req.params;
+    
+    // Get raw torrent from database
+    const rawTorrent = await Torrent.findOne({ infoHash }).lean();
+    console.log('DEBUG: Raw torrent from DB:', rawTorrent);
+    
+    // Get user info
+    if (rawTorrent && rawTorrent.uploadedBy) {
+      const user = await User.findOne({ _id: rawTorrent.uploadedBy }).lean();
+      console.log('DEBUG: User found:', user);
+      
+      res.json({
+        torrent: rawTorrent,
+        user: user,
+        uploadedByType: typeof rawTorrent.uploadedBy,
+        uploadedByValue: rawTorrent.uploadedBy
+      });
+    } else {
+      res.json({
+        torrent: rawTorrent,
+        user: null,
+        uploadedByType: rawTorrent ? typeof rawTorrent.uploadedBy : 'undefined',
+        uploadedByValue: rawTorrent ? rawTorrent.uploadedBy : 'undefined'
+      });
+    }
   } catch (e) {
     next(e);
   }

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import moment from "moment";
@@ -37,13 +37,7 @@ const Request = ({ request, token, user }) => {
 
   const commentInputRef = useRef();
 
-  const {
-    publicRuntimeConfig: {
-      SQ_API_URL,
-      SQ_SITE_WIDE_FREELEECH,
-      SQ_TORRENT_CATEGORIES,
-    },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
 
   const router = useRouter();
 
@@ -204,7 +198,7 @@ const Request = ({ request, token, user }) => {
           {moment(request.created).format(`${getLocaleString("indexTime")}`)}{" "}
           {getLocaleString("reqBy")}{" "}
           {request.createdBy?.username ? (
-            <Link href={`/user/${request.createdBy.username}`} passHref>
+            <Link href={`/user/${request.createdBy.username}`} legacyBehavior>
               <a>{request.createdBy.username}</a>
             </Link>
           ) : (
@@ -247,7 +241,7 @@ const Request = ({ request, token, user }) => {
                 cell: ({ value, row }) => (
                   <Text>
                     {value}
-                    {(row.freeleech || SQ_SITE_WIDE_FREELEECH === true) && (
+                    {(row.freeleech || process.env.SQ_SITE_WIDE_FREELEECH === true) && (
                       <Text as="span" fontSize={0} color="primary" ml={3}>
                         {getLocaleString("torrFL")}
                       </Text>
@@ -261,7 +255,7 @@ const Request = ({ request, token, user }) => {
                 accessor: "type",
                 cell: ({ value }) => (
                   <Text icon={ListUl}>
-                    {Object.keys(SQ_TORRENT_CATEGORIES).find(
+                    {Object.keys(process.env.SQ_TORRENT_CATEGORIES).find(
                       (c) => slugify(c, { lower: true }) === value
                     ) || "None"}
                   </Text>
@@ -385,15 +379,12 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders, query: { index } }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { id, role } = jwt.verify(token, SQ_JWT_SECRET);
 
     try {
-      const requestRes = await fetch(`${SQ_API_URL}/requests/${index}`, {
+      const requestRes = await fetch(`${process.env.SQ_API_URL}/requests/${index}`, {
         headers: fetchHeaders,
       });
       if (

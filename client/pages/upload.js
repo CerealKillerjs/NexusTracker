@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useContext, useEffect } from "react";
-import getConfig from "next/config";
+import React, { useState, useCallback, useContext, useEffect, useMemo } from "react";
+
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import css from "@styled-system/css";
@@ -50,8 +50,9 @@ export const TorrentFields = ({
   handleGroupSearch,
   groupSuggestions,
 }) => {
+  const parsedCategories = typeof categories === 'string' ? JSON.parse(categories || '{}') : categories;
   const [category, setCategory] = useState(
-    values?.category ?? slugify(Object.keys(categories)[0], { lower: true })
+    values?.category ?? slugify(Object.keys(parsedCategories)[0] || '', { lower: true })
   );
   const [sources, setSources] = useState([]);
   const [tags, setTags] = useState(values?.tags?.split(",") ?? []);
@@ -61,14 +62,14 @@ export const TorrentFields = ({
   useEffect(() => {
     setSources(
       category
-        ? categories[
-            Object.keys(categories).find(
+        ? parsedCategories[
+            Object.keys(parsedCategories).find(
               (cat) => slugify(cat, { lower: true }) === category
             )
           ]
         : []
     );
-  }, [category]);
+  }, [category, parsedCategories]);
 
   return (
     <>
@@ -85,7 +86,7 @@ export const TorrentFields = ({
         required
       />
       {groupSuggestions}
-      {!!Object.keys(categories).length && (
+      {!!Object.keys(parsedCategories).length && (
         <Select
           name="category"
           label={getLocaleString("uploadCategory")}
@@ -96,7 +97,7 @@ export const TorrentFields = ({
           mb={4}
           required
         >
-          {Object.keys(categories).map((cat) => (
+          {Object.keys(parsedCategories).map((cat) => (
             <option key={cat} value={slugify(cat, { lower: true })}>
               {cat}
             </option>
@@ -181,7 +182,7 @@ export const TorrentFields = ({
           </Button>
         </Box>
       </WrapLabel>
-      <Input name="tags" value={tags.join(",")} display="none" />
+      <Input name="tags" value={(tags || []).join(",")} display="none" />
     </>
   );
 };
@@ -197,16 +198,16 @@ const Upload = ({ token, userId, userRole }) => {
   });
   const [cookies] = useCookies();
 
-  const {
-    publicRuntimeConfig: {
-      SQ_BASE_URL,
-      SQ_API_URL,
-      SQ_TORRENT_CATEGORIES,
-      SQ_ALLOW_ANONYMOUS_UPLOAD,
-      SQ_EXTENSION_BLACKLIST = [],
-      SQ_ENABLE_PROTECTED_TORRENTS = false,
-    },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
+  
+  // Parse environment variables consistently
+  const extensionBlacklist = useMemo(() => {
+    try {
+      return JSON.parse(process.env.SQ_EXTENSION_BLACKLIST || '[]');
+    } catch {
+      return [];
+    }
+  }, []);
 
   const { addNotification } = useContext(NotificationContext);
   const { setLoading } = useContext(LoadingContext);
@@ -408,11 +409,11 @@ const Upload = ({ token, userId, userRole }) => {
             fontFamily="mono"
             _css={{ userSelect: "all", wordBreak: "break-all" }}
           >
-            {SQ_BASE_URL}/sq/{userId}/announce
+            {process.env.SQ_BASE_URL}/sq/{userId}/announce
           </Text>
         </Text>
       </Box>
-      {!!SQ_EXTENSION_BLACKLIST.length && (
+      {!!process.env.SQ_EXTENSION_BLACKLIST.length && (
         <Infobox mb={5}>
           <Text mb={3}>{getLocaleString("uploadInfoBox1")}</Text>
           <Text
@@ -425,7 +426,7 @@ const Upload = ({ token, userId, userRole }) => {
             px={3}
             py={1}
           >
-            {SQ_EXTENSION_BLACKLIST.join(", ")}
+            {extensionBlacklist.join(", ")}
           </Text>
         </Infobox>
       )}
@@ -489,7 +490,7 @@ const Upload = ({ token, userId, userRole }) => {
           </Box>
         </Box>
         <TorrentFields
-          categories={SQ_TORRENT_CATEGORIES}
+          categories={process.env.SQ_TORRENT_CATEGORIES}
           handleGroupSearch={handleGroupSearch}
           groupSuggestions={
             groupSuggestions.length ? (
@@ -571,13 +572,13 @@ const Upload = ({ token, userId, userRole }) => {
             </Button>
           </Box>
         )}
-        {SQ_ALLOW_ANONYMOUS_UPLOAD && (
+        {process.env.SQ_ALLOW_ANONYMOUS_UPLOAD && (
           <Checkbox
             name="anonymous"
             label={getLocaleString("uploadAnonymousUpload")}
           />
         )}
-        {SQ_ENABLE_PROTECTED_TORRENTS && userRole === "admin" && (
+        {process.env.SQ_ENABLE_PROTECTED_TORRENTS && userRole === "admin" && (
           <Box mb={4}>
             <Box display="flex" alignItems="center" mb={3}>
               <Checkbox
@@ -635,7 +636,7 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders }) => {
     // Get user role from token
     const jwt = require("jsonwebtoken");
-    const { role } = jwt.verify(token, getConfig().serverRuntimeConfig.SQ_JWT_SECRET);
+    const { role } = jwt.verify(token, process.env.SQ_JWT_SECRET);
     return { props: { userRole: role } };
   }
 );

@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useRouter } from "next/router";
-import getConfig from "next/config";
+
 import qs from "qs";
 import { withAuthServerSideProps } from "../../utils/withAuth";
 import SEO from "../../components/SEO";
@@ -16,17 +16,16 @@ const Tag = ({ results, token }) => {
     query: { tag },
   } = router;
 
-  const {
-    publicRuntimeConfig: { SQ_TORRENT_CATEGORIES, SQ_API_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
+  const SQ_TORRENT_CATEGORIES = process.env.SQ_TORRENT_CATEGORIES ? JSON.parse(process.env.SQ_TORRENT_CATEGORIES) : {};
 
   const { getLocaleString } = useContext(LocaleContext);
 
   return (
     <>
-      <SEO title={`${getLocaleString("tagTaggedWith")} “${tag}”`} />
+      <SEO title={`${getLocaleString("tagTaggedWith")} " ${tag} "`} />
       <Text as="h1" mb={5}>
-        {getLocaleString("tagTaggedWith")} “{tag}”
+        {getLocaleString("tagTaggedWith")} " {tag} "
       </Text>
       {torrents.length ? (
         <TorrentList
@@ -53,9 +52,7 @@ export const getServerSideProps = withAuthServerSideProps(
   }) => {
     if (!token && !isPublicAccess) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-    } = getConfig();
+    const SQ_API_URL = process.env.SQ_API_URL;
 
     const params = {
       tag: encodeURIComponent(tag),

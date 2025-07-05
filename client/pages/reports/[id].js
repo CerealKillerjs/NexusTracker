@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import getConfig from "next/config";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import jwt from "jsonwebtoken";
@@ -21,9 +21,7 @@ const Report = ({ report, token, userRole }) => {
   const { addNotification } = useContext(NotificationContext);
   const { setLoading } = useContext(LoadingContext);
 
-  const {
-    publicRuntimeConfig: { SQ_API_URL },
-  } = getConfig();
+  const SQ_API_URL = process.env.SQ_API_URL;
 
   const router = useRouter();
 
@@ -69,9 +67,9 @@ const Report = ({ report, token, userRole }) => {
   return (
     <>
       <SEO
-        title={`${getLocaleString("repRepOn")} “${
+        title={`${getLocaleString("repRepOn")} " ${
           report.torrent.name
-        }” | ${getLocaleString("navReports")}`}
+        }" | ${getLocaleString("navReports")}`}
       />
       <Box
         display="flex"
@@ -80,7 +78,7 @@ const Report = ({ report, token, userRole }) => {
         mb={3}
       >
         <Text as="h1">
-          {getLocaleString("repRepOn")} “{report.torrent.name}”
+          {getLocaleString("repRepOn")} "{report.torrent.name}"
         </Text>
         <Button onClick={handleResolve}>
           {getLocaleString("repMarkSolved")}
@@ -90,7 +88,7 @@ const Report = ({ report, token, userRole }) => {
         {getLocaleString("repRep")}{" "}
         {moment(report.created).format(`${getLocaleString("indexTime")}`)}{" "}
         {getLocaleString("reqBy")}{" "}
-        <Link href={`/user/${report.reportedBy.username}`} passHref>
+        <Link href={`/user/${report.reportedBy.username}`} legacyBehavior>
           <a>{report.reportedBy.username}</a>
         </Link>
       </Text>
@@ -98,7 +96,7 @@ const Report = ({ report, token, userRole }) => {
         title={getLocaleString("repTorrDetail")}
         items={{
           [getLocaleString("uploadName")]: (
-            <Link href={`/torrent/${report.torrent.infoHash}`} passHref>
+            <Link href={`/torrent/${report.torrent.infoHash}`} legacyBehavior>
               <a>{report.torrent.name}</a>
             </Link>
           ),
@@ -138,17 +136,14 @@ export const getServerSideProps = withAuthServerSideProps(
   async ({ token, fetchHeaders, query: { id } }) => {
     if (!token) return { props: {} };
 
-    const {
-      publicRuntimeConfig: { SQ_API_URL },
-      serverRuntimeConfig: { SQ_JWT_SECRET },
-    } = getConfig();
+    const SQ_JWT_SECRET = process.env.SQ_JWT_SECRET;
 
     const { role } = jwt.verify(token, SQ_JWT_SECRET);
 
     if (role !== "admin") return { props: { report: null, userRole: role } };
 
     try {
-      const reportRes = await fetch(`${SQ_API_URL}/reports/${id}`, {
+      const reportRes = await fetch(`${process.env.SQ_API_URL}/reports/${id}`, {
         headers: fetchHeaders,
       });
       if (
